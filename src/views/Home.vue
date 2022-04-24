@@ -199,8 +199,8 @@
               console.log(res.data.captcha_url);
               this.turnToUrl(res.data.captcha_url);
             }
-            //this.destroyBox();
-            //this.$router.go(0);
+            this.destroyBox();
+            this.$router.go(0);
           }else{
             console.log("ERROR!重新添加！！！")
           }
