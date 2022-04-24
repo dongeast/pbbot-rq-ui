@@ -2,7 +2,7 @@
   <div>
     <div>
       <div style="display: flex; justify-content: left; margin-top: 20px">
-        <el-button style="margin-left: 100px" type="warning" icon="el-icon-plus" @click="doSearch">添加插件</el-button>
+        <el-button style="margin-left: 100px" type="warning" icon="el-icon-plus" @click="addPlugins">添加插件</el-button>
       </div>
       <div class="admin-container">
         <el-card class="admin-card" v-for="(admin, index) in admins" :key="index">
@@ -27,13 +27,13 @@
             </div>
           </div>
           <div class="userInfo">
+            <br/>
             <div>
               机器人状态:
               {{admin.qqbot_state}}
             </div>
           </div>
-          <el-button style="font-size: 20px;" type="primary" icon="el-icon-s-promotion" circle @click="turnToUrl(admin.qqbot_url)"></el-button>
-        </el-card>
+          </el-card>
         <el-card class="admin-card">
           <el-button
                   style="
@@ -42,37 +42,62 @@
                             font-size:30px;
                             margin-left: 10px;
                             margin-top: 50px;
-                            margin-bottom: 50px" type="primary" icon="el-icon-plus" circle @click="addBotDia()"></el-button>
+                            margin-bottom: 50px" type="primary" icon="el-icon-plus" circle @click="addDia()"></el-button>
         </el-card>
       </div>
     </div>
     <!--登陆机器人账号-->
     <el-dialog
-            title="提示"
+            title="🔮插件中心🔮"
             :visible.sync="dialogVisible"
-            width="30%"
+            width="50%"
             :before-close="handleClose">
       <div>
         <el-form :inline="true" :model="form" class="demo-form-inline">
-          <el-form-item label="请扫描二维码完成QQ机器人的登陆">
-            <el-image style="width: 100px; height: 100px"
-                      :src="image_url" ></el-image>
-            <!--                        <el-button type="primary" icon="el-icon-refresh" @click="">有网络问题？</el-button>-->
+          <el-form-item label="插件名称">
+            <el-input v-model="pluginName"></el-input>
           </el-form-item>
-          <el-form-item label="二维码状态：">
-            {{image_state}}
+          <el-form-item label="URL地址">
+            <el-input v-model="pluginUrl"></el-input>
           </el-form-item>
+          <el-button type="primary" @click="addPlugin()">确 定</el-button>
+          <br/>
+          <div style="font-size: large">🎮已安装的插件🎮</div>
+          <!-- 插件列表 -->
+          <el-table
+                  :data="tableData"
+                  style="width: 100%"
+                  :row-class-name="tableRowClassName">
+            <el-table-column
+                    prop="name"
+                    label="名称"
+                    width="180">
+            </el-table-column>
+            <el-table-column
+                    prop="disabled"
+                    label="是否禁止"
+                    width="180">
+            </el-table-column>
+            <el-table-column
+                    prop="urls"
+                    label="URL地址">
+            </el-table-column>
+            <el-table-column
+                    fixed="right"
+                    label="操作"
+                    width="100">
+              <template slot-scope="scope">
+                <el-button type="text" size="small" @click="deletePlugin(scope.row)">删除</el-button>
+              </template>
+            </el-table-column>
+          </el-table>
         </el-form>
       </div>
-      <span slot="footer" class="dialog-footer">
-            <el-button @click="destroyBox()">取 消</el-button>
-            <el-button type="primary" @click="destroyBox()">确 定</el-button>
-          </span>
     </el-dialog>
 
     <!-- 添加机器人账号 -->
     <el-dialog
-            title="提示"
+            title="登陆选择"
             :visible.sync="dialogVisibleTwo"
             width="30%"
             :before-close="handleClose">
@@ -94,7 +119,7 @@
               </el-option>
             </el-select>
           </el-form-item>
-          <el-form-item v-if="!switchValue" label="请输入机器人QQ">
+          <el-form-item v-if="!switchValue" label="请输入机器人 QQ">
             <el-input v-model="qq.qqNumber" placeholder="填写机器人QQ号"></el-input>
           </el-form-item>
           <el-form-item v-if="!switchValue" label="请输入机器人密码">
@@ -129,13 +154,22 @@
   }
   export default {
     methods: {
-      addBotDia(){
-        this.dialogVisibleTwo = true;
+      tableRowClassName({row, rowIndex}) {
+        if (rowIndex === 1) {
+          return 'warning-row';
+        } else if (rowIndex === 3) {
+          return 'success-row';
+        }
+        return '';
       },
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
       // 跳转到验证链接
       turnToUrl(url){
         window.open(url,"_blank");
+      },
+      // 打开插件中心
+      addPlugins(){
+        this.dialogVisible = true;
       },
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
       addBot(){
@@ -157,36 +191,29 @@
         }).then(res => {
           console.log(res); // 返回结果"success"
           if(res.status === 200){
-            this.destroyBox();
+            if(res.data.verify_url!=null){
+              console.log(res.data.verify_url);
+              this.turnToUrl(res.data.verify_url);
+            }
+            if(res.data.captcha_url!=null){
+              console.log(res.data.captcha_url);
+              this.turnToUrl(res.data.captcha_url);
+            }
+            //this.destroyBox();
+            //this.$router.go(0);
           }else{
             console.log("ERROR!重新添加！！！")
           }
         });
       },
 //////////////////////////////////////////////👆👆👆👆👆👆👆👆👆👆👆///////////////////////////////////////////////////////
-      handleClick(row) {
-        console.log(row);
+      // 打开对话框
+      addDia(){
+        this.dialogVisibleTwo = true;
       },
-
+      // 对话框关闭
       handleClose(done) {
         this.destroyBox();
-      },
-
-      submit(){
-        this.dialogVisible = false;
-        console.log(this.form);
-        axios({
-          method: 'post',
-          url: `/qq/addPrivateDialogue`,
-          params: {
-            "question" : this.form.question,
-            "answer" : this.form.answer,
-            "tperson" : this.form.tperson,
-            "type" : this.form.type,
-            "owner" : this.$cookies.get("userName")}
-        }).then(res => {
-          // this.$router.go(0);
-        })
       },
 
       // 定时刷新数据函数
@@ -198,7 +225,7 @@
         // 计时器为空，操作
         this.intervalId = setInterval(() => {
           this.checkQR();
-        }, 5000);
+        }, 3000);
       },
 
       // 停止定时器
@@ -207,13 +234,12 @@
         this.intervalId = null; //设置为null
       },
 
+      // IPad: 0
+      // AndroidPhone: 1
+      // AndroidWatch: 2
+      // MacOS: 3
+      // 企点: 4
       checkQR(){
-        // IPad: 0
-        // AndroidPhone: 1
-        // AndroidWatch: 2
-        // MacOS: 3
-        // 企点: 4
-        // 使用账号和密码添加机器人
         const that = this;
         const jsons = {
           "sig" : this.image_sig,
@@ -235,6 +261,73 @@
             }
         });
       },
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+      getPlugin(){
+        const that = this;
+        const jsons = { };
+        console.log(JSON.stringify(jsons));
+        axios({
+          method: 'get',
+          url: `/qqbot/plugin/list`,
+          data: JSON.stringify(jsons),
+          headers: {
+            'Content-Type': 'application/json;charset=UTF-8'
+          }
+        }).then(res => {
+          let result = [];
+          for (let [key, value] of Object.entries(res.data.plugins)) {
+            console.log(key, value);
+            const json = {
+              name: key,
+              urls: value.urls[0],
+              disabled: ""+value.disabled,
+            };
+            result.push(json);
+          }
+          that.tableData = result;
+        });
+      },
+      addPlugin(){
+        const that = this;
+        const jsons = {
+          name : that.pluginName,
+          plugin :
+                  {
+                    urls:[that.pluginUrl]
+                  }
+        };
+        console.log(JSON.stringify(jsons));
+        axios({
+          method: 'post',
+          url: `/qqbot/plugin/save`,
+          data: JSON.stringify(jsons),
+          headers: {
+            'Content-Type': 'application/json;charset=UTF-8'
+          }
+        }).then(res => {
+          console.log(res);
+          // 刷新界面，重新获取数据
+          this.$router.go(0);
+        });
+      },
+      deletePlugin(row){
+        const that = this;
+        const jsons = {
+          name : row.name,
+        };
+        console.log(JSON.stringify(jsons));
+        axios({
+          method: 'post',
+          url: `/qqbot/plugin/delete`,
+          data: JSON.stringify(jsons),
+          headers: {
+            'Content-Type': 'application/json;charset=UTF-8'
+          }
+        }).then(res => {
+          console.log(res);
+          this.$router.go(0);
+        });
+      },
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
       getCode(){
         // 获取登陆二维码
@@ -245,10 +338,11 @@
           this.yourIPAddress = res.data.split("\"")[3];
           console.log(this.yourIPAddress);
         });
-        console.log(sum(this.yourIPAddress.split("."))*1314521);
-        // 添加机器人
+        console.log(sum(this.yourIPAddress.split("."))*123);
+        // 设置获取二维码的参数
+        // 设备种子默认为设备公网IP地址之和乘以123 -> 例如：127.0.0.1 => 128*123
         const jsons = {
-          "device_seed":sum(this.yourIPAddress.split("."))*1314521,
+          "device_seed":sum(this.yourIPAddress.split("."))*123,
           "client_protocol":this.value,
         };
         console.log(JSON.stringify(jsons));
@@ -273,31 +367,21 @@
         });
       },
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-      // 卡片传进来机器人的qq号
-      createBox(botId) {
-        axios({
-          method: 'post',
-          url: `/qq/getAbsoluteId`,
-          params: {
-            "botId" : botId,
-          }
-        }).then(res => {
-          let port = parseInt(res) + 10000;
-          this.getLogin(botId, port);
-          this.dialogVisible = true;
-        })
-      },
+      // 关掉对话框并清除定时器
       destroyBox(){
         this.dialogVisible = false;
         this.dialogVisibleTwo = false;
         // 在页面销毁后，清除计时器
         this.clear();
-        // this.$router.go(0);
+        // 将二维码图片改为默认图片
+        this.squareUrl = 'https://cube.elemecdn.com/9/c2/f0ee8a3c7c9638a54940382568c9dpng.png';
+        this.image_sig = '';
       },
-
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+      // 删除机器人的方法
       deleteAdmin(admin) {
         this.$confirm(
-                "此操作将永久删除" + admin.botId + "机器人, 是否继续?",
+                "将删除机器人" + admin.qqbot_id + "，是否继续?",
                 "提示",
                 {
                   confirmButtonText: "确定",
@@ -307,15 +391,15 @@
         )
                 .then(() => {
                   // 删除机器人功能
-                  // 参数username，botId
-                  // this.$cookies.get("userName")
-                  // admin.botId
+                  const jsons = {
+                    "uin":admin.qqbot_id,
+                  };
                   axios({
                     method: 'post',
-                    url: `/qq/deleteBot`,
-                    params: {
-                      "username" : this.$cookies.get("userName"),
-                      "botId" : "" + admin.botId,
+                    url: `/qqbot/bot/delete`,
+                    data: JSON.stringify(jsons),
+                    headers: {
+                      'Content-Type': 'application/json;charset=UTF-8'
                     }
                   }).then(res => {
                     console.log(res);
@@ -331,57 +415,34 @@
       },
     },
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-    ipToInt(ip){
-      let num = 0;
-      ip = ip.split(".");
-      num = Number(ip[0]) * 256 * 256 * 256 + Number(ip[1]) * 256 * 256 + Number(ip[2]) * 256 + Number(ip[3]);
-      num = num >>> 0;
-      this.youIPNumber = num;
-      console.log("#############" + this.youIPNumber)
-    },
-////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+    // 页面创建时的启动函数
     created(){
+      this.getPlugin();
       const that = this;
       axios({
         method: 'get',
-        url: `/qqbot/login/password/list`,
+        url: `/qqbot/bot/list`,
         headers: {
           'Content-Type': 'application/json;charset=UTF-8'
         }
       }).then(res => {
-        console.log(res.data.clients); // 返回结果"success"
-        if(res.status === 200){
-          console.log("启动成功！！！");
-          that.admins = [];
-          this.results = res.data.clients;
-          this.results.forEach(function(result) {
-            console.log(result);
-            axios({
-              method: 'get',
-              url: '/api/qq/' + result.uin,
-            }).then(resp=>{
-              let url = "";
-              console.log(resp);
-              if(result.resp.captcha_url!=null){
-                url = result.resp.captcha_url;
-              }else{
-                url = result.resp.verify_url;
-              }
-              let json = {
-                name:"test",
-                qqbot_id: result.uin,
-                qqbot_avatar: "https://q2.qlogo.cn/headimg_dl?dst_uin="+ result.uin +"&spec=100",
-                qqbot_state: result.resp.state,
-                qqbot_nickname: resp.data.data.name,
-                qqbot_url: url,
-              };
-              that.admins.push(json);
-            });
-
-          });
-        }else{
-          console.log("ERROR!重新操作！！！")
-        }
+        console.log(res.data.bots); // 返回结果"success"
+        // 首先清空默认列表，防止干扰
+        that.admins = [];
+        this.results = res.data.bots;
+        this.results.forEach(function(result) {
+          console.log(result.nick);
+          console.log(result.running);
+          console.log(result.uin);
+          let json = {
+            qqbot_id: result.uin,
+            qqbot_avatar: "https://q2.qlogo.cn/headimg_dl?dst_uin="+ result.uin +"&spec=100",
+            qqbot_state: result.running,
+            qqbot_nickname: result.nick,
+          };
+          that.admins.push(json);
+          console.log(that.admins);
+        });
       });
       axios({
         method: 'post',
@@ -395,11 +456,21 @@
 
     data() {
       return {
+        // 添加插件的两个参数
+        pluginName : '',
+        pluginUrl : '',
+        ////////////////////
+        // 获取到的插件列表
+        pluginList : [],
+        ////////////////////
         youIPNumber : 1,
         yourIPAddress : 1,
         squareUrl: "https://cube.elemecdn.com/9/c2/f0ee8a3c7c9638a54940382568c9dpng.png",
         switchValue: true,
         options: [{
+          value: 0,
+          label: 'IPad'
+        },{
           value: 1,
           label: 'AndroidPhone'
         }, {
@@ -410,12 +481,9 @@
           label: 'MacOS'
         }, {
           value: 4,
-          label: 'IPad'
-        }, {
-          value: 5,
           label: 'QiDian'
         }],
-        value: 4,
+        value: 0,
         admins: [
           {
             name:"出错啦QAQ~",
@@ -461,12 +529,11 @@
         },
         centerDialogVisible: false,
         tableData: [{
-          // id: '1',
-          // question: '你从哪里来',
-          // answer: '大唐',
-          // tperson: '唐僧',
-          // type: '字符串'
-        }]
+          name: 'test',
+          disabled: 'false',
+          urls: 'www.test.com/apis',
+        },
+        ]
       }
     }
   }
@@ -511,5 +578,11 @@
     background: lightsteelblue;
     background-size: 100% auto;
   }
+  .el-table .warning-row {
+    background: oldlace;
+  }
 
+  .el-table .success-row {
+    background: #f0f9eb;
+  }
 </style>
