@@ -148,7 +148,7 @@
 </template>
 
 <script>
-  import axios from "axios";
+  import axios from 'axios'
 
   function sum(arr) {
     return eval(arr.join("+"));
@@ -189,7 +189,7 @@
         console.log(JSON.stringify(jsons));
         axios({
           method: 'post',
-          url: `/qqbot/login/password/create`,
+          url: this.qqbot_url + `/login/password/create`,
           data: JSON.stringify(jsons),
           headers: {
             'Content-Type': 'application/json;charset=UTF-8'
@@ -253,7 +253,7 @@
         console.log(JSON.stringify(jsons));
         axios({
           method: 'post',
-          url: `/qqbot/login/qrcode/query`,
+          url: this.qqbot_url + `/login/qrcode/query`,
           data: JSON.stringify(jsons),
           headers: {
             'Content-Type': 'application/json;charset=UTF-8'
@@ -274,7 +274,7 @@
         console.log(JSON.stringify(jsons));
         axios({
           method: 'get',
-          url: `/qqbot/plugin/list`,
+          url: this.qqbot_url + `/plugin/list`,
           data: JSON.stringify(jsons),
           headers: {
             'Content-Type': 'application/json;charset=UTF-8'
@@ -305,7 +305,7 @@
         console.log(JSON.stringify(jsons));
         axios({
           method: 'post',
-          url: `/qqbot/plugin/save`,
+          url: this.qqbot_url + `/plugin/save`,
           data: JSON.stringify(jsons),
           headers: {
             'Content-Type': 'application/json;charset=UTF-8'
@@ -324,7 +324,7 @@
         console.log(JSON.stringify(jsons));
         axios({
           method: 'post',
-          url: `/qqbot/plugin/delete`,
+          url: this.qqbot_url + `/plugin/delete`,
           data: JSON.stringify(jsons),
           headers: {
             'Content-Type': 'application/json;charset=UTF-8'
@@ -354,7 +354,7 @@
         console.log(JSON.stringify(jsons));
         axios({
           method: 'post',
-          url: `/qqbot/login/qrcode/create`,
+          url: this.qqbot_url + `/login/qrcode/create`,
           data: JSON.stringify(jsons),
           headers: {
             'Content-Type': 'application/json;charset=UTF-8'
@@ -402,7 +402,7 @@
                   };
                   axios({
                     method: 'post',
-                    url: `/qqbot/bot/delete`,
+                    url: this.qqbot_url + `/bot/delete`,
                     data: JSON.stringify(jsons),
                     headers: {
                       'Content-Type': 'application/json;charset=UTF-8'
@@ -427,7 +427,7 @@
       const that = this;
       axios({
         method: 'get',
-        url: `/qqbot/bot/list`,
+        url: this.qqbot_url + `/bot/list`,
         headers: {
           'Content-Type': 'application/json;charset=UTF-8'
         }
@@ -452,7 +452,7 @@
       });
       axios({
         method: 'post',
-        url:"/sohu/cityjson?ie=utf-8"
+        url: this.sohu_url + "/cityjson?ie=utf-8"
       }).then(res => {
         this.yourIPAddress = res.data.split("\"")[3];
         console.log(this.yourIPAddress);
