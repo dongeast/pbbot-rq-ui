@@ -2,7 +2,8 @@
   <div>
     <div>
       <div style="display: flex; justify-content: left; margin-top: 20px">
-        <el-button style="margin-left: 100px" type="warning" icon="el-icon-plus" @click="addPlugins">添加插件</el-button>
+        <el-button style="margin-left: 100px;" type="warning" icon="el-icon-plus" @click="addPlugins">添加插件</el-button>
+          <i style="font-size: 30px; margin-left: 10px; margin-top: 5px;" class="el-icon-link" @click="turnToLink"></i>
       </div>
       <div class="admin-container">
         <el-card class="admin-card" v-for="(admin, index) in admins" :key="index">
@@ -166,6 +167,11 @@
       // 跳转到验证链接
       turnToUrl(url){
         window.open(url,"_blank");
+      },
+      // 跳转到开源仓库
+      turnToLink(){
+          window.open("https://github.com/ProtobufBot/pbbot-rq","_blank");
+          window.open("https://github.com/dongeast/pbbot-rq-ui","_blank");
       },
       // 打开插件中心
       addPlugins(){
